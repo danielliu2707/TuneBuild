@@ -1,12 +1,12 @@
 {% extends "layout.html" %}  
 {% block content %}
-    <div>
-        <button class="button-authenticate" onclick="navigateToPage('/spotify-auth')">Authenticate</button>
-    </div>
+  <div class="title-button">
+    <button onclick="navigateToPage('/spotify-auth')">AUTHENTICATE</button>
+  </div>
 
-    <script>
-        function navigateToPage(url) {
-            window.location.href = url;
-        }
-    </script>
+  <script>
+    function navigateToPage(url) {
+      window.location.href = url;
+    }
+  </script>
 {% endblock %}

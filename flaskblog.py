@@ -3,22 +3,7 @@ from datetime import datetime
 import requests
 import urllib.parse
 
-app = Flask(__name__, static_url_path="", static_folder="static")
-
-posts = [
-    {
-        'author': 'Corey Schafer',
-        'title': 'Blog Post 1',
-        'content': 'First post content',
-        'date_posted': 'April 20, 2018'
-    },
-    {
-        'author': 'Jane Doe',
-        'title': 'Blog Post 2',
-        'content': 'Second post content',
-        'date_posted': 'April 21, 2018'
-    }
-]
+app = Flask(__name__, static_folder="templates/assets")
 
 # Needed to access Flask Session (can store data accessed later between requests).
 app.secret_key = '53d355f8-571a-4590-a310-1f9579440851' 
@@ -36,13 +21,12 @@ AUTH_URL = 'https://accounts.spotify.com/authorize'
 TOKEN_URL = 'https://accounts.spotify.com/api/token'  
 API_BASE_URL = 'https://api.spotify.com/v1/'
 
-
 @app.route("/")
 @app.route("/home")
 def home():
     # If no access token is not session, force user to authenticate
     if 'access_token' not in session:
-        return render_template('home.html', posts=posts)
+        return render_template('home.html')
     
     # If access token has expired, refresh the token
     if datetime.now().timestamp() > session['expires_at']:
@@ -50,18 +34,13 @@ def home():
         return redirect(url_for('refresh_token'))
     return redirect(url_for('create_playlist'))
 
-
-@app.route("/about")
-def about():
-    return render_template('about.html', title='About')
-
 @app.route("/spotify-auth")
 def spotify_auth():
     """
      Makes request to Spotifies Auth URL, passing params to retrieve playlists and 
      redirect the user to this authentication URL.
     """
-    scope = 'user-read-private user-read-email'  # Reading a users private playlists/songs AND email
+    scope = 'user-top-read playlist-modify-public playlist-modify-private'
     
     # spotify requires a few parameters for this:
     params = {
@@ -177,7 +156,7 @@ def create_playlist():
         print('Token Expired')
         return redirect(url_for('refresh_token'))
     
-    # Retrieve user playlists
+    # Retrieve user playlists - Can instead retrieve user top songs
     headers = {
         'Authorization': f"Bearer {session['access_token']}",
     }
@@ -189,9 +168,9 @@ def create_playlist():
     
     #TODO:
     ## Insert code for creating the playlist
-    #print(session['playlists'])  ## The jsonified data.
+    print(session['playlists'])  ## The jsonified data.
     
-    return render_template('create-playlist.html', posts=posts)
+    return render_template('create-playlist.html')
 
 
 if __name__ == '__main__':

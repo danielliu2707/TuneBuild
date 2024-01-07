@@ -1,2 +1,6 @@
 TODO.md
 Notes.md
+/redundant
+.flask_session
+.cache
+/data/raw_user_data.csv
