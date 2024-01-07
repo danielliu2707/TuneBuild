@@ -1,0 +1,12 @@
+{% extends "layout.html" %}  
+{% block content %}
+    <div>
+        <button class="button-authenticate" onclick="navigateToPage('/create-playlist')">Create Playlist</button>
+    </div>
+
+    <script>
+        function navigateToPage(url) {
+            window.location.href = url;
+        }
+    </script>
+{% endblock %}
