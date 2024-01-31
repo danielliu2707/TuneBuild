@@ -1,8 +1,5 @@
-from flask import Flask, render_template, url_for, redirect, jsonify, session, request
+from flask import Flask, render_template, url_for, redirect, session, request
 from datetime import datetime
-import requests
-import urllib.parse
-import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import os
 from dotenv import load_dotenv
@@ -10,24 +7,16 @@ from src.classes import GetUserSongs, Authorize, FeatureEngineer, Recommend, Spo
 
 app = Flask(__name__, static_folder="templates/assets")
 
-# Needed to access Flask Session (can store data accessed later between requests).
 app.secret_key = os.urandom(64)
 
 REDIRECT_URI = 'http://localhost:5000/callback'
-
-# URL's to get the token from spotify, refresh token and API's base URL
 TOKEN_URL = SpotifyOAuth.OAUTH_TOKEN_URL
 API_BASE_URL = 'https://api.spotify.com/v1/'
-
-# Set cache handler for storing access tokens
-cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
-
-# Authorize
-scope = 'user-top-read playlist-modify-public playlist-modify-private'
 
 # Load all env variables (client_id, client_secret)
 load_dotenv()
 
+# Authorize user
 authorize = Authorize(client_id=os.getenv('CLIENT_ID'),client_secret=os.getenv('CLIENT_SECRET'),
                       scope="user-top-read playlist-modify-public playlist-modify-private", callback='http://localhost:5000/callback')
 authorize.authorize()
@@ -40,7 +29,10 @@ user_id = authorize.user_id
 @app.route("/")
 @app.route("/home")
 def home():
-    # If no access token is not session, force user to authenticate
+    """
+    Endpoint that loads the home page.
+    """
+    # If no access token in session, force user to authenticate
     if 'access_token' not in session:
         return render_template('home.html')
     
@@ -52,8 +44,7 @@ def home():
 @app.route("/spotify-auth")
 def spotify_auth():
     """
-     Makes request to Spotifies Auth URL, passing params to retrieve playlists and 
-     redirect the user to this authentication URL.
+    Endpoint used in redirecting user to spotify authentication
     """
     return redirect(oauth_manager.get_authorize_url())
 
@@ -68,6 +59,11 @@ def spotify_auth():
 
 @app.route('/callback')
 def callback():
+    """
+    Endpoint used to redirect user back to the client application once authenticated.
+    Then obtains the access_token used for making calls to the Spotify API, 
+    refresh_token and expiry of the access_token.
+    """
     # If we get a code, get access token
     if request.args.get('code'):
         tokens = oauth_manager.get_access_token(request.args.get('code'))
@@ -97,9 +93,9 @@ def refresh_token():
 @app.route("/get_songs")
 def get_songs():
     """
-    Renders create-playlist page
+    Endpoint used for obtaining features of the users' top songs in 
+    addition to rendering the create-playlist page.
     """
-    
     # Get user data
     get_data = GetUserSongs(sp=sp)
     get_data.get_identification()
@@ -110,6 +106,11 @@ def get_songs():
 
 @app.route("/create_playlist")
 def create_playlist():
+    """
+    Endpoint used for creating the recommended playlist on the users Spotify
+    when a user clicks the CREATE PLAYLIST button.
+    """
+    # If access token not found, reauthenticate
     if 'access_token' not in session:
         return redirect(url_for('spotify_auth'))
     
