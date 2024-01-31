@@ -1,5 +1,3 @@
-## TODO: Will need to rebuild this from the start, with a focus on integrating it with Spotipy.
-
 from flask import Flask, render_template, url_for, redirect, jsonify, session, request
 from datetime import datetime
 import requests
@@ -7,15 +5,13 @@ import urllib.parse
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import os
+from dotenv import load_dotenv
 from src.classes import GetUserSongs, Authorize, FeatureEngineer, Recommend, SpotipyPlaylist
 
 app = Flask(__name__, static_folder="templates/assets")
 
 # Needed to access Flask Session (can store data accessed later between requests).
 app.secret_key = os.urandom(64)
-
-CLIENT_ID = '9f951db530d8462fbedfd75507b90cbf'
-CLIENT_SECRET = '3f38813ebdb24d0caa8db79c5a169862'
 
 REDIRECT_URI = 'http://localhost:5000/callback'
 
@@ -28,7 +24,11 @@ cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
 
 # Authorize
 scope = 'user-top-read playlist-modify-public playlist-modify-private'
-authorize = Authorize(client_id='9f951db530d8462fbedfd75507b90cbf',client_secret='3f38813ebdb24d0caa8db79c5a169862',
+
+# Load all env variables (client_id, client_secret)
+load_dotenv()
+
+authorize = Authorize(client_id=os.getenv('CLIENT_ID'),client_secret=os.getenv('CLIENT_SECRET'),
                       scope="user-top-read playlist-modify-public playlist-modify-private", callback='http://localhost:5000/callback')
 authorize.authorize()
 

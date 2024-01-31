@@ -4,3 +4,4 @@ Notes.md
 .flask_session
 .cache
 /data/raw_user_data.csv
+.env
