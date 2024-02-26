@@ -15,14 +15,12 @@
 
 <body>
   <section id="section-1">
-    <div class="img-spark" id="openModalBtn">
-      <img src="assets/images/spark.svg" alt="">
-    </div>
     <div class="hero">
       <h1 id="title">
         <span style="color: #F86642;">Revolutionize</span> Your Music Experience <br />
         With Curated Playlists <span style="color: #F86642;">Tailored</span> To You.
       </h1>
+      {% block content2 %}{% endblock %}
       <div class="title-button">
         {% block content %}{% endblock %}
       </div>
@@ -36,14 +34,21 @@
     <div class="modal-content">
       <span class="close" id="closeModalBtn">&times;</span>
       <p>Weclome to TuneBuild! </p>
-      
-      <p>Please click Authenticate to be redirected to Spotify Authentication.<p>
+
+      <p>Please click Authenticate to be redirected to Spotify Authentication.
+      <p>
 
       <p>Once authenticated, click Create Playlist and a new<br>playlist will appear in your Spotify account.</p>
     </div>
   </div>
 
   <footer>
+    <div class="how-to-use">
+      <p> How To Use </p>
+      <div class="img-spark" id="openModalBtn">
+        <img src="assets/images/spark.svg" alt="">
+      </div>
+    </div>
     <p> Project by Daniel</p>
     <a href="">
       <img src="assets/images/linkedin.svg" alt="">
