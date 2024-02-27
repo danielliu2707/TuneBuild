@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, session, request, jsonify
+from flask.views import MethodView
 from datetime import datetime
 from spotipy.oauth2 import SpotifyOAuth
 import os
@@ -8,6 +9,8 @@ import jsonpickle
 app = Flask(__name__, static_folder="templates/assets")
 
 app.secret_key = os.urandom(64)
+
+app.config['SESSION_COOKIE_SECURE'] = True
 
 REDIRECT_URI = 'http://localhost:5000/callback'
 TOKEN_URL = SpotifyOAuth.OAUTH_TOKEN_URL
@@ -52,13 +55,12 @@ def my_form_post():
     # I WANT TO GET RID OF THIS!!! TRY NOT TO USE GLOBAL VARIABLES
     # TODO: Since sessions don't work, try a database.
     # Or figure out why sessions don't translate over
-    global oauth_manager
-    oauth_manager = jsonpickle.encode(authorize.oauth)
-    global sp 
-    sp = jsonpickle.encode(authorize.sp)
-    global user_id
-    user_id = authorize.user_id
-    
+    # global oauth_manager
+    # oauth_manager = jsonpickle.encode(authorize.oauth)
+    # global sp 
+    # sp = jsonpickle.encode(authorize.sp)
+    # global user_id
+    # user_id = authorize.user_id
     
     return redirect(url_for('spotify_auth'))
 
@@ -85,13 +87,6 @@ def callback():
     Then obtains the access_token used for making calls to the Spotify API, 
     refresh_token and expiry of the access_token.
     """
-    # I WANT TO GET RID OF THIS!!! BEST NOT TO USE GLOBAL VARIABLES
-    session['oauth_manager'] = oauth_manager
-    session['sp'] = sp
-    session['user_id'] = user_id
-    print(session)
-    
-    
     # If we get a code, get access token
     if request.args.get('code'):
         tokens = jsonpickle.decode(session.get('oauth_manager')).get_access_token(request.args.get('code'))
@@ -187,5 +182,5 @@ def create_playlist():
 
     return render_template('create-playlist.html')
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
