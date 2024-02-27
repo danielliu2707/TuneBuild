@@ -2,7 +2,6 @@ from flask import Flask, render_template, url_for, redirect, session, request, j
 from datetime import datetime
 from spotipy.oauth2 import SpotifyOAuth
 import os
-from dotenv import load_dotenv
 from src.classes import GetUserSongs, Authorize, FeatureEngineer, Recommend, SpotipyPlaylist
 import jsonpickle
 
@@ -14,9 +13,6 @@ app.secret_key = os.urandom(64)
 REDIRECT_URI = 'http://localhost:5000/callback'
 TOKEN_URL = SpotifyOAuth.OAUTH_TOKEN_URL
 API_BASE_URL = 'https://api.spotify.com/v1/'
-
-# Load all env variables (client_id, client_secret)
-load_dotenv()
 
 # Setting constant variables
 # oauth_manager = authorize.oauth
