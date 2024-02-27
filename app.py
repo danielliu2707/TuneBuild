@@ -5,7 +5,6 @@ import os
 from src.classes import GetUserSongs, Authorize, FeatureEngineer, Recommend, SpotipyPlaylist
 import jsonpickle
 
-
 app = Flask(__name__, static_folder="templates/assets")
 
 app.secret_key = os.urandom(64)
