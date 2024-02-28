@@ -7,19 +7,29 @@
 
 TuneBuild is an application that generates Spotify playlists tailored to your music taste 🎶
 
+With a few clicks, you will find personalised playlists on your Spotify account 💥
+
 # Demo
-👉 Watch it <a href="https://www.youtube.com/embed/tgbNymZ7vqY">here</a>.
+Watch <a href="https://www.youtube.com/embed/tgbNymZ7vqY">here</a> 👈
 <br>
+
+# Requirements
+<br>
+Generate a [Client ID and Secret Key](https://developer.spotify.com/dashboard) on Spotify and set the Redirect URI under app settings to:  
+
+http://localhost:5000
+
+A guide is provided in the Demo seen above.
 
 # Installation
 
-### OS X
-coming soon :stuck_out_tongue_closed_eyes:
+### Mac OS X
+Coming Soon!
 
 ### Windows
-coming soon :stuck_out_tongue_closed_eyes:
+Coming Soon!
 
-### For developers
+### Developers
 
 Clone repo
 
