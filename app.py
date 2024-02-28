@@ -1,5 +1,4 @@
 from flask import Flask, render_template, url_for, redirect, session, request, jsonify
-from flask.views import MethodView
 from datetime import datetime
 from spotipy.oauth2 import SpotifyOAuth
 import os
@@ -7,23 +6,17 @@ from src.classes import GetUserSongs, Authorize, FeatureEngineer, Recommend, Spo
 import jsonpickle
 
 app = Flask(__name__, static_folder="templates/assets")
-
 app.secret_key = os.urandom(64)
-
 app.config['SESSION_COOKIE_SECURE'] = True
 
 REDIRECT_URI = 'http://localhost:5000/callback'
 TOKEN_URL = SpotifyOAuth.OAUTH_TOKEN_URL
 API_BASE_URL = 'https://api.spotify.com/v1/'
 
-# Setting constant variables
-# oauth_manager = authorize.oauth
-# sp = authorize.sp
-# user_id = authorize.user_id
-
-# authorize = Authorize(client_id=session.get('client_id'),client_secret=session.get('client_secret'),
-#                     scope="user-top-read playlist-modify-public playlist-modify-private", callback='http://localhost:5000/callback')
-# authorize.authorize()
+# Initializing constant values
+oauth_manager = None
+sp = None
+user_id = None
 
 @app.route("/")
 @app.route("/home")
@@ -42,26 +35,20 @@ def home():
 
 @app.route('/collect-data', methods=['POST'])
 def my_form_post():
-    client_details = request.json
+    client_details = request.json   # client_id and client_secret
     # Authorize user
     authorize = Authorize(client_id=client_details['client-id'],client_secret=client_details['client-secret'],
                         scope="user-top-read playlist-modify-public playlist-modify-private", callback='http://localhost:5000/callback')
     authorize.authorize()
     
-    session['oauth_manager'] = jsonpickle.encode(authorize.oauth)
-    session['sp'] = jsonpickle.encode(authorize.sp)
-    session['user_id'] = authorize.user_id
-    
-    # I WANT TO GET RID OF THIS!!! TRY NOT TO USE GLOBAL VARIABLES
-    # TODO: Since sessions don't work, try a database.
-    # Or figure out why sessions don't translate over
-    # global oauth_manager
-    # oauth_manager = jsonpickle.encode(authorize.oauth)
-    # global sp 
-    # sp = jsonpickle.encode(authorize.sp)
-    # global user_id
-    # user_id = authorize.user_id
-    
+    # Store Spotify objects as constant globals
+    global oauth_manager
+    oauth_manager = jsonpickle.encode(authorize.oauth)
+    global sp
+    sp = jsonpickle.encode(authorize.sp)
+    global user_id
+    user_id = authorize.user_id
+
     return redirect(url_for('spotify_auth'))
 
 @app.route("/spotify-auth")
@@ -69,16 +56,8 @@ def spotify_auth():
     """
     Endpoint used in redirecting user to spotify authentication
     """
-    return jsonify({'url': jsonpickle.decode(session.get('oauth_manager')).get_authorize_url()})
+    return jsonify({'url': jsonpickle.decode(oauth_manager).get_authorize_url()})
 
-""" 
- When logging in, either the user will login successfully - Spotify gives us a code to get an access token.
- The user may login unsuccessfully - We will get an error.
- 
- callback endpoint: In an OAuth process, used to redirect the user back to the client application
- once they've been granted permission.
- * Once we get user info, Spotify will callback to this /callback endpoint.
-"""
 
 @app.route('/callback')
 def callback():
@@ -89,7 +68,7 @@ def callback():
     """
     # If we get a code, get access token
     if request.args.get('code'):
-        tokens = jsonpickle.decode(session.get('oauth_manager')).get_access_token(request.args.get('code'))
+        tokens = jsonpickle.decode(oauth_manager).get_access_token(request.args.get('code'))
         session['access_token'] = tokens['access_token']
         session['refresh_token'] = tokens['refresh_token']
         session['expires_at'] = tokens['expires_at']
@@ -101,13 +80,16 @@ def callback():
 
 @app.route('/refresh-token')
 def refresh_token():
+    """
+    Endpoint used to obtain new access token if refresh token has expired or is non-existent.
+    """
     # If no refresh token, request a login
     if 'refresh_token' not in session:
         return redirect(url_for('spotify_auth'))
     
     # If access token has expired, make a request for a fresh access token
     if datetime.now().timestamp() > session['expires_at']:
-        new_token_info = jsonpickle.decode(session.get('oauth_manager')).refresh_access_token(session['refresh_token'])
+        new_token_info = jsonpickle.decode(oauth_manager).refresh_access_token(session['refresh_token'])
         session['access_token'] = new_token_info['access_token']
         session['expires_at'] = new_token_info['expires_at']
         
@@ -120,7 +102,7 @@ def get_songs():
     addition to rendering the create-playlist page.
     """
     # Get user data
-    get_data = GetUserSongs(sp=jsonpickle.decode(session.get('sp')))
+    get_data = GetUserSongs(sp=jsonpickle.decode(sp))
     get_data.get_identification()
     get_data.add_track_features()
     get_data.export_features('data/raw_user_data.csv')
@@ -139,7 +121,6 @@ def create_playlist():
     
     # If access token has expired, refresh the token
     if datetime.now().timestamp() > session['expires_at']:
-        print('Token Expired')
         return redirect(url_for('refresh_token'))
     
     # FeatureEngineer with all songs data
@@ -176,7 +157,7 @@ def create_playlist():
     recommended_songs = list(recommend.next_20_songs['id'])
     
     # Create and add tracks to playlist on user account
-    playlist = SpotipyPlaylist(jsonpickle.decode(session.get('sp')), session.get('user_id'))
+    playlist = SpotipyPlaylist(jsonpickle.decode(sp), user_id)
     playlist.create_playlist(playlist_name='TuneBuild Recommended Playlist', playlist_description='A TuneBuild playlist - Built by Daniel Liu.')
     playlist.add_to_playlist(recommended_songs)
 

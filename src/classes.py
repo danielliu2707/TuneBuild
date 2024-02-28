@@ -1,5 +1,4 @@
 # Import modules
-import os
 import pandas as pd
 import re
 from sklearn.preprocessing import MinMaxScaler
@@ -10,11 +9,23 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
 class FeatureEngineer():
+    """
+    Extracts all relevant features used in the recommendation algorithm from a dataset.
+    """
     def __init__(self):
+        """
+        Initialize attributes.
+        """
         self.song_df = None
         self.tfidf_df = None
     
     def load_data(self, path):
+        """
+        Loads input dataset
+
+        Args:
+            path (str): Path of file to be read in.
+        """
         self.song_df = pd.read_csv(path)
         
     def drop_duplicate_songs(self):
@@ -26,21 +37,39 @@ class FeatureEngineer():
         self.song_df.reset_index(drop=True, inplace=True)
         
     def make_genres_list(self):
+        """
+        Obtain a list of genres by splitting the string of genres.
+        """
         self.song_df['genres'] = self.song_df['genres'].apply(lambda row: row.split(' '))
 
     def get_relevant_features(self):
+        """
+        Extracting relevant features to be used for the recommendation algorithm.
+        """
         self.song_df = self.song_df[['id', 'danceability', 'energy', 'key', 'loudness', 'mode',
        'speechiness', 'acousticness', 'instrumentalness', 'liveness',
        'valence', 'tempo', 'genres', 'artist_pop', 'track_pop']]
     
     def export_songs(self, path):
+        """
+        Exports output dataset.
+        
+        Args:
+            path (str): Path of file to be exported
+        """
         self.song_df.to_csv(path)
     
     def get_tfidf(self):
+        """
+        Converting genres into numeric values in order to allow for a useable format
+        when inputting into the recommendation algorithm.
+        """
+        # Applying Tfidf on genres column
         tfidf = TfidfVectorizer()
         tfidf_array = tfidf.fit_transform(self.song_df['genres'].apply(lambda x: " ".join(x))).toarray()
         self.tfidf_df = pd.DataFrame(tfidf_array)
         self.tfidf_df.columns = ['genre' + '|' + i for i in tfidf.get_feature_names_out()]
+        # Attempt to drop unknown genre if it exists
         try:
             self.tfidf_df.drop(columns='genre|unknown', inplace=True)
         except:
@@ -48,6 +77,9 @@ class FeatureEngineer():
         self.tfidf_df.reset_index(drop=True, inplace=True)
     
     def normalize_features(self):
+        """
+        Normalizing features to ensure all features are on the same scale.
+        """
         # Performing Normalization on popularities
         scaler = MinMaxScaler()
         self.song_df[['artist_pop', 'track_pop']] = scaler.fit_transform(self.song_df[['artist_pop', 'track_pop']])
@@ -58,9 +90,15 @@ class FeatureEngineer():
     
     # Concatenate features
     def get_final_df(self):
+        """
+        Return final dataset.
+        """
         return pd.concat([self.song_df, self.tfidf_df], axis = 1)
     
 class Recommend():
+    """
+    
+    """
     def __init__(self):
         self.user_feature_sum = None
         self.all_feature_df = None
@@ -108,30 +146,49 @@ class Recommend():
 
 
 class GetUserSongs():
+    """
+    Obtain a users' top 35 spotify songs and add relevant track features used
+    for the recommendation algorithm.
+    """
     def __init__(self, sp):
+        """
+        Initialize relevant attributes.
+        """
         self.user_songs = None
         self.exported_df = None
         self.sp = sp
     
     def get_identification(self):
+        """
+        Get top 35 spotify songs and unique identifiers of the song.
+        """
         artist_name = []
         track_id = []
         artist_uri = []
-        # Audio Features
         for sp_range in ['short_term']:
             results = self.sp.current_user_top_tracks(time_range=sp_range, limit=35)
             for _, item in enumerate(results['items']):
+                # Extract unique identifer of song
                 artist_uri.append(item['artists'][0]['id'])
+                # Extract additional relevant features
                 artist_name.append(item['artists'][0]['name'])
                 track_id.append(item['id'])
         
+        # Construct dataframe of user top songs
         self.user_songs = pd.DataFrame({
         'artist_name': artist_name,
         'track_id': track_id,
         'artist_uri': artist_uri
         })
         
-    def _extract_track_features(self, track_id):
+    def _extract_track_features(self, track_id: str):
+        """
+        Extracting features for each song to be used in the recommendation algorithm
+        using the unique identifier for each song.
+
+        Args:
+            track_id (str): A unique identifier for the track
+        """
         features = self.sp.audio_features(track_id)[0]
 
         # Add in track poularity:
@@ -151,6 +208,9 @@ class GetUserSongs():
         return features
 
     def add_track_features(self):
+        """
+        Adding extracted features from each song into a final dataframe.
+        """
         feature_lst = []
         # Iterate through and get a list of features for each song
         with concurrent.futures.ThreadPoolExecutor() as exectuor:
@@ -164,44 +224,52 @@ class GetUserSongs():
         self.exported_df = pd.merge(self.user_songs, feature_df, left_on='track_id', right_on='id')
     
     def export_features(self, path):
+        """
+        Export final dataframe containing features of users' top songs.
+        """
         self.exported_df.to_csv(path)
         
 class SpotipyPlaylist:
+    """
+    Performs required actions on the users' spotify account.
+    """
     def __init__(self, sp, user_id):
-        """_summary_
-
-        Args:
-            sp (_type_): Spotipy object
+        """
+        Initialize relevant attributes.
         """
         self.sp = sp
         self.playlist_id = None
         self.user_id = user_id
     
-    def create_playlist(self, playlist_name, playlist_description):
+    def create_playlist(self, playlist_name: str, playlist_description: str):
         """
-        Creates playlist and obtains playlist id
+        Initializes an empty playlist on the users' Spotify account.
 
         Args:
-            sp (_type_): _description_
-            playlist_name (_type_): _description_
-            playlist_description (_type_): _description_
+            playlist_name (str): The title of the Spotify Playlist
+            playlist_description (str): The description of the Spotify Playlist
         """
         self.sp.user_playlist_create(self.user_id, playlist_name, description = playlist_description)
         pl = list(self.sp.user_playlists(self.user_id)['items'])[0]
         self.playlist_id = pl['id']
         
-    def add_to_playlist(self, playlist_tracks):
+    def add_to_playlist(self, playlist_tracks: list):
         """
-        Adds tracks to playlist
+        Adds recommendation trakcs on the users' Spotify account.
 
         Args:
-            playlist_id (_type_): _description_
-            playlist_tracks (_type_): _description_
+            playlist_tracks (list): A list of track ID's to identify recommended songs
         """
         self.sp.playlist_add_items(playlist_id = self.playlist_id, items = playlist_tracks)
 
 class Authorize():
+    """
+    Authenticates user to perform required actions on behalf of the user on their Spotify account.
+    """
     def __init__(self, client_id, client_secret, scope, callback):
+        """
+        Initialize required attributes.
+        """
         self.CLIENT_ID = client_id
         self.CLIENT_SECRET = client_secret
         self.scope = scope
@@ -211,6 +279,9 @@ class Authorize():
         self.oauth = None
         
     def authorize(self):
+        """
+        Open authentication window and obtain access token to retrieve data from Spotify API.
+        """
         self.oauth = SpotifyOAuth(scope=self.scope, redirect_uri=self.callback, client_id=self.CLIENT_ID, client_secret=self.CLIENT_SECRET, open_browser=True, show_dialog=True)
         self.sp = spotipy.Spotify(auth_manager=self.oauth, auth = self.oauth.get_access_token()['access_token'])
         self.user_id = self.sp.me()['id']
