@@ -4,6 +4,7 @@ from spotipy.oauth2 import SpotifyOAuth
 import os
 from src.classes import GetUserSongs, Authorize, FeatureEngineer, Recommend, SpotipyPlaylist
 import jsonpickle
+import random, threading, webbrowser
 
 app = Flask(__name__, static_folder="templates/assets")
 app.secret_key = os.urandom(64)
@@ -164,4 +165,7 @@ def create_playlist():
     return render_template('create-playlist.html')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = 5000 + random.randint(0, 999)
+    url = "http://127.0.0.1:{0}".format(port)
+    threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
+    app.run(port=port, debug=False)

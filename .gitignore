@@ -5,3 +5,4 @@ Notes.md
 .cache
 /data/raw_user_data.csv
 .env
+/project_env
