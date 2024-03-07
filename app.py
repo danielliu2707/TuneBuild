@@ -10,14 +10,11 @@ app = Flask(__name__, static_folder="templates/assets")
 app.secret_key = os.urandom(64)
 app.config['SESSION_COOKIE_SECURE'] = True
 
-REDIRECT_URI = 'http://localhost:5000/callback'
-TOKEN_URL = SpotifyOAuth.OAUTH_TOKEN_URL
-API_BASE_URL = 'https://api.spotify.com/v1/'
-
 # Initializing constant values
 oauth_manager = None
 sp = None
 user_id = None
+port = 5001
 
 @app.route("/")
 @app.route("/home")
@@ -37,9 +34,10 @@ def home():
 @app.route('/collect-data', methods=['POST'])
 def my_form_post():
     client_details = request.json   # client_id and client_secret
-    # Authorize user
-    authorize = Authorize(client_id=client_details['client-id'],client_secret=client_details['client-secret'],
-                        scope="user-top-read playlist-modify-public playlist-modify-private", callback='http://localhost:5000/callback')
+    client_id = str(client_details['client-id'])
+    client_secret = str(client_details['client-secret'])
+    authorize = Authorize(client_id=client_id,client_secret=client_secret,
+                        scope="user-top-read playlist-modify-public playlist-modify-private", callback=f'http://localhost:{5001}/callback')
     authorize.authorize()
     
     # Store Spotify objects as constant globals
@@ -165,7 +163,6 @@ def create_playlist():
     return render_template('create-playlist.html')
 
 if __name__ == "__main__":
-    port = 5000
     url = "http://127.0.0.1:{0}".format(port)
     threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
     app.run(port=port, debug=False)
