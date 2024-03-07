@@ -23,12 +23,6 @@ A guide is provided in the Demo seen above.
 
 # Installation
 
-### Mac OS X
-Coming Soon!
-
-### Windows
-Coming Soon!
-
 ### Developers
 
 Clone repo
@@ -62,6 +56,12 @@ $ pip install -r requirements.txt
 ```
 
 Run application
+
+### Mac OS X
+Coming Soon!
+
+### Windows
+Coming Soon!
 
 ```sh
 $ python3 app.py
