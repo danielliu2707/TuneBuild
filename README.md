@@ -10,7 +10,7 @@ TuneBuild is an application that generates Spotify playlists tailored to your mu
 With a few clicks, you will find personalised playlists on your Spotify account 💥
 
 # Demo
-Watch <a href="https://www.youtube.com/embed/tgbNymZ7vqY">here</a> 👈
+Watch <a href="https://www.youtube.com/watch?v=r6SXL31N6sg">here</a> 👈
 <br>
 
 # Requirements
