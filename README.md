@@ -16,7 +16,8 @@ Watch <a href="https://www.youtube.com/watch?v=r6SXL31N6sg">here</a> 👈
 
 # Requirements
 <br>
-Generate a [hey](https://developer.spotify.com/dashboard) on Spotify and set the Redirect URI under app settings to:  
+
+Generate a [Client ID & Client Secret](https://developer.spotify.com/dashboard) on Spotify and set the Redirect URI under app settings to:
 
 http://localhost:5001
 
