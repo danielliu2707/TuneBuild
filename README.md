@@ -12,7 +12,7 @@ With a few clicks, you will find personalised playlists on your Spotify account 
 # Demo
 Watch <a href="https://www.youtube.com/watch?v=r6SXL31N6sg">here</a> 👈
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/r6SXL31N6sg?si=1bQj4xCLhlu-ZRdz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/r6SXL31N6sg?si=1bQj4xCLhlu-ZRdz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" data-external="1"></iframe>
 
 <br>
 
