@@ -16,7 +16,7 @@ Watch <a href="https://www.youtube.com/watch?v=r6SXL31N6sg">here</a> 👈
 
 # Requirements
 <br>
-Generate a [Client ID and Secret Key](https://developer.spotify.com/dashboard) on Spotify and set the Redirect URI under app settings to:  
+Generate a [hey](https://developer.spotify.com/dashboard) on Spotify and set the Redirect URI under app settings to:  
 
 http://localhost:5001
 
@@ -58,12 +58,13 @@ $ pip install -r requirements.txt
 
 Run application
 
+```sh
+$ python app.py
+```
+
 ### Mac OS X
 Coming Soon!
 
 ### Windows
 Coming Soon!
 
-```sh
-$ python3 app.py
-```
